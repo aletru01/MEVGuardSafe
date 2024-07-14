@@ -2,8 +2,12 @@ import { VerificationLevel, IDKitWidget } from "@worldcoin/idkit";
 import type { ISuccessResult } from "@worldcoin/idkit";
 import type { VerifyReply } from "./api/verify";
 import { useRouter } from "next/router";
+import { useEffect, useRef } from "react";
+import styles from '../styles/loggingPage.module.css';
 
 export default function Home() {
+	const openRef: any = useRef(null);
+
 	if (!process.env.NEXT_PUBLIC_WLD_APP_ID) {
 		throw new Error("app_id is not set in environment variables!");
 	}
@@ -12,6 +16,12 @@ export default function Home() {
 	}
 
 	const router = useRouter();
+	useEffect(() => {
+
+		if (openRef.current) {
+			openRef.current();
+		}
+	}, []);
 
 	const onSuccess = (result: ISuccessResult) => {
 		// This is where you should perform frontend actions once a user has been verified, such as redirecting to a new page
@@ -42,32 +52,28 @@ export default function Home() {
 			console.log("hash: ", result.nullifier_hash);
 			const nullifierHash = result.nullifier_hash;
 			router.push({
-				pathname: '/success',
+				pathname: '/loggedPage',
 				query: { nullifierHash },
-			  });
+			});
 		} else {
 			throw new Error(`Error code ${res.status} (${data.code}): ${data.detail}` ?? "Unknown error."); // Throw an error if verification fails
 		}
 	};
 
 	return (
-		<div>
-			<div className="flex flex-col items-center justify-center align-middle h-screen">
-				<p className="text-2xl mb-5">World ID Cloud Template</p>
-				<IDKitWidget
-					action={process.env.NEXT_PUBLIC_WLD_ACTION!}
-					app_id={process.env.NEXT_PUBLIC_WLD_APP_ID as `app_${string}`}
-					onSuccess={onSuccess}
-					handleVerify={handleProof}
-					verification_level={VerificationLevel.Device} // Change this to VerificationLevel.Device to accept Orb- and Device-verified users
-				>
-					{({ open }) =>
-						<button className="border border-black rounded-md" onClick={open}>
-							<div className="mx-3 my-1">Verify with World ID</div>
-						</button>
-					}
-				</IDKitWidget>
-			</div>
+		<div className={styles.container}>
+			<IDKitWidget
+				action={process.env.NEXT_PUBLIC_WLD_ACTION!}
+				app_id={process.env.NEXT_PUBLIC_WLD_APP_ID as `app_${string}`}
+				onSuccess={onSuccess}
+				handleVerify={handleProof}
+				verification_level={VerificationLevel.Device} // Change this to VerificationLevel.Device to accept Orb- and Device-verified users
+			>
+				{({ open }) => {
+					openRef.current = open;
+					return <></>;
+				}}
+			</IDKitWidget>
 		</div>
 	);
 }
