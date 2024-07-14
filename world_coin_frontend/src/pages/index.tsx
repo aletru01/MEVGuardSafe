@@ -38,7 +38,6 @@ export default function Home() {
 			action: process.env.NEXT_PUBLIC_WLD_ACTION,
 			signal: "",
 		};
-
 		console.log("Sending proof to backend for verification:\n", JSON.stringify(reqBody)) // Log the proof being sent to our backend for visibility
 		const res: Response = await fetch("/api/verify", {
 			method: "POST",
